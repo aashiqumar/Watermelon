@@ -9,3 +9,8 @@ watermelon.db-wal
 .vscode/
 .idea/
 *.swp
+
+# Flatpak build artifacts
+vendor/
+.flatpak-builder/
+build-dir/

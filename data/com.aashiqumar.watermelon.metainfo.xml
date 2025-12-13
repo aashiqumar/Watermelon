@@ -30,4 +30,8 @@
       </description>
     </release>
   </releases>
+  <developer id="com.aashiqumar">
+    <name>Aashiq Umar</name>
+  </developer>
+  <content_rating type="oars-1.1" />
 </component>
