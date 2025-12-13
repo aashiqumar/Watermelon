@@ -6,12 +6,28 @@
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT</project_license>
   <description>
-    <p>Watermelon is a productivity app designed for Fedora Linux.</p>
+    <p>Watermelon is a modern, native note-taking application built for the Linux desktop.</p>
+    <p>Features:</p>
+    <ul>
+      <li>Rich Markdown editing with bold, italic, and lists</li>
+      <li>Interactive task lists</li>
+      <li>Organize notes with folders and drag-and-drop</li>
+      <li>Fast, local-first performance using Rust and GTK4</li>
+    </ul>
   </description>
   <launchable type="desktop-id">com.aashiqumar.watermelon.desktop</launchable>
+  <url type="homepage">https://github.com/aashiqumar/Watermelon</url>
+  <url type="bugtracker">https://github.com/aashiqumar/Watermelon/issues</url>
   <screenshots>
     <screenshot type="default">
-      <image>https://raw.githubusercontent.com/example/watermelon/main/docs/assets/watermelon_ui_mockup.png</image>
+      <image>https://raw.githubusercontent.com/aashiqumar/Watermelon/main/assets/screenshot.png</image>
     </screenshot>
   </screenshots>
+  <releases>
+    <release version="0.1.0" date="2025-12-13">
+      <description>
+        <p>Initial release of Watermelon.</p>
+      </description>
+    </release>
+  </releases>
 </component>

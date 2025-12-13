@@ -19,7 +19,7 @@
                 "install -D target/release/watermelon /app/bin/watermelon",
                 "install -D data/com.aashiqumar.watermelon.desktop /app/share/applications/com.aashiqumar.watermelon.desktop",
                 "install -D data/com.aashiqumar.watermelon.metainfo.xml /app/share/metainfo/com.aashiqumar.watermelon.metainfo.xml",
-                "install -D assets/icon.svg /app/share/icons/hicolor/scalable/apps/com.aashiqumar.watermelon.svg"
+                "install -D assets/icon.png /app/share/icons/hicolor/512x512/apps/com.aashiqumar.watermelon.png"
             ],
             "sources": [
                 {
