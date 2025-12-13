@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.aashiqumar.watermelon</id>
+  <name>Watermelon</name>
+  <summary>Fresh. Clean. Friendly. Notes App.</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <description>
+    <p>Watermelon is a productivity app designed for Fedora Linux.</p>
+  </description>
+  <launchable type="desktop-id">com.aashiqumar.watermelon.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/example/watermelon/main/docs/assets/watermelon_ui_mockup.png</image>
+    </screenshot>
+  </screenshots>
+</component>

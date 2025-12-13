@@ -1,0 +1,214 @@
+/* Watermelon UI Redesign - Bear Theme */
+
+:root {
+    --accent-color: #D94040;
+    /* Bear Red */
+    --bg-color: #FFFFFF;
+    --sidebar-bg: #F5F5F5;
+    /* Light Grey for Note List */
+    --nav-bg: #2E303E;
+    /* Dark for Navigation */
+    --text-color: #2C3E50;
+    --text-dim: #8A8A8A;
+    --border-radius: 8px;
+}
+
+window {
+    font-family: "Inter", "Cantarell", sans-serif;
+    color: var(--text-color);
+    background-color: var(--bg-color);
+}
+
+/* Navigation Pane (Left) */
+.navigation-pane {
+    background-color: var(--nav-bg);
+    color: white;
+}
+
+.nav-header {
+    font-weight: 800;
+    font-size: 1.2em;
+    color: white;
+    font-size: 12px;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.nav-item {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    color: white;
+    /* Force white text */
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.nav-item-label {
+    color: white;
+    font-weight: 500;
+}
+
+.nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.nav-item.selected {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.nav-icon {
+    color: white;
+    background: transparent;
+    border: none;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.nav-icon:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-section-title {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 1px;
+}
+
+/* Sidebar (Middle - Note List) */
+.navigation-sidebar {
+    background-color: var(--sidebar-bg);
+    border-right: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-row {
+    padding: 0;
+    background: transparent;
+}
+
+.sidebar-card {
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    padding: 12px;
+    transition: all 0.2s;
+}
+
+.sidebar-row:hover .sidebar-card {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-row:selected .sidebar-card {
+    background-color: white;
+    /* Keep white card even when selected, maybe border? */
+    border: 2px solid var(--accent-color);
+    padding: 10px;
+    /* Adjust for border */
+}
+
+/* Alternative: Bear style selection is often just the card becoming active */
+/* Let's try a subtle active state or the red border approach */
+
+.sidebar-title {
+    font-weight: 700;
+    font-size: 1.05em;
+    color: var(--text-color);
+}
+
+.sidebar-preview {
+    font-size: 0.9em;
+    color: var(--text-dim);
+    margin-top: 4px;
+}
+
+.sidebar-date {
+    font-size: 0.8em;
+    color: var(--accent-color);
+    font-weight: 600;
+    margin-top: 8px;
+}
+
+/* Editor (Right) */
+.editor-container {
+    background-color: white;
+}
+
+.toolbar-pill {
+    background-color: #F8F9FA;
+    border-radius: 20px;
+    padding: 4px 8px;
+    /* Reduced padding */
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.toolbar-btn {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 6px;
+    /* Reduced padding */
+    border-radius: 50%;
+    /* Circular buttons */
+    color: var(--text-color);
+    min-width: 28px;
+    /* Smaller size */
+    min-height: 28px;
+}
+
+.toolbar-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: var(--text-color);
+}
+
+.toolbar-btn:active {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.editor-title {
+    font-size: 28px;
+    font-weight: 800;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    color: var(--text-color);
+    padding: 0;
+    padding-bottom: 8px;
+}
+
+.editor-title:focus {
+    border-bottom: none;
+    /* Clean look */
+}
+
+/* Scrollbars */
+scrollbar {
+    background: transparent;
+}
+
+scrollbar slider {
+    min-width: 6px;
+    min-height: 6px;
+    border-radius: 10px;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+
+button {
+    border-radius: 20px;
+    /* Pill shape */
+}
+
+button.suggested-action {
+    background-color: var(--accent-color);
+    color: white;
+}

@@ -1,0 +1,11 @@
+/target
+notes.db
+watermelon.db
+notes.db-shm
+notes.db-wal
+watermelon.db-shm
+watermelon.db-wal
+.DS_Store
+.vscode/
+.idea/
+*.swp

@@ -1,0 +1,37 @@
+name: Nightly Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-flatpak:
+    runs-on: ubuntu-latest
+    container:
+      image: bilelmoussaoui/flatpak-github-actions:gnome-45
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build Flatpak
+      uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+      with:
+        bundle: watermelon.flatpak
+        manifest-path: build-aux/com.example.Watermelon.json
+    - name: Upload Flatpak
+      uses: actions/upload-artifact@v3
+      with:
+        name: watermelon-flatpak
+        path: watermelon.flatpak
+
+  build-rpm:
+    runs-on: ubuntu-latest
+    container: fedora:latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install Deps
+      run: dnf install -y cargo gtk4-devel libadwaita-devel rpm-build
+    - name: Build RPM
+      run: |
+        # (Simplified for CI)
+        cargo build --release
