@@ -218,10 +218,9 @@ impl SimpleComponent for App {
                     if let Some(note) = self.notes.get_mut(index) {
                         note.content = content;
                         note.updated_at = chrono::Utc::now();
-                        // DEFER SAVE: Don't save on every keystroke to prevent lag.
-                        // We should save on note switch, app close, or a timer.
-                        // For now, we rely on the in-memory update and save on switch.
-                        // let _ = self.note_service.update_note(note);
+                        // Save on every keystroke for now to prevent data loss.
+                        // Optimization: Implement debounce later if lag occurs.
+                        let _ = self.note_service.update_note(note);
 
                         // Update sidebar preview (optional, might be too frequent)
                         // self.sidebar.sender().send(SidebarMsg::UpdateNotes(self.notes.clone())).unwrap();
@@ -264,7 +263,7 @@ impl SimpleComponent for App {
                                 note.updated_at = chrono::Utc::now();
 
                                 // Save to DB
-                                if let Err(e) = self.note_service.update_note(&note) {
+                                if let Err(_e) = self.note_service.update_note(&note) {
                                 } else {
                                     // Refresh notes
                                     if let Ok(notes) = self.note_service.get_all_notes() {
@@ -286,7 +285,7 @@ impl SimpleComponent for App {
 
                             // Refresh notes from DB to reflect folder name changes
                             if let Ok(notes) = self.note_service.get_all_notes() {
-                                if let Some(first) = notes.first() {}
+                                if let Some(_first) = notes.first() {}
                                 self.notes = notes;
                                 self.update_sidebar_notes();
                             }

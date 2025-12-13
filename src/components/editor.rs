@@ -83,109 +83,140 @@ impl Editor {
     }
 
     fn highlight_buffer(buffer: &gtk::TextBuffer) {
-        // Simple regex-based highlighter for demonstration
-        // In a real app, this should be more robust and maybe incremental
-
         let (start, end) = buffer.bounds();
-        let _text = buffer.text(&start, &end, true);
+        let text = buffer.text(&start, &end, true);
 
-        // We only want to highlight inside code blocks
-        // Iterate over "code" tag ranges
+        // Remove existing tags (except code blocks which are handled separately? No, let's clear all for simplicity)
+        buffer.remove_all_tags(&start, &end);
+
+        // 1. Bold: **text**
+        if let Ok(re) = regex::Regex::new(r"\*\*([^*]+)\*\*") {
+            for mat in re.find_iter(&text) {
+                let start_offset = mat.start();
+                let end_offset = mat.end();
+                
+                // Convert byte offsets to char offsets
+                let start_char = text[..start_offset].chars().count() as i32;
+                let end_char = text[..end_offset].chars().count() as i32;
+
+                let start_iter = buffer.iter_at_offset(start_char);
+                let end_iter = buffer.iter_at_offset(end_char);
+
+                let mut content_start = start_iter;
+                content_start.forward_chars(2);
+                let mut content_end = end_iter;
+                content_end.backward_chars(2);
+
+                buffer.apply_tag_by_name("bold", &content_start, &content_end);
+                buffer.apply_tag_by_name("hidden", &start_iter, &content_start);
+                buffer.apply_tag_by_name("hidden", &content_end, &end_iter);
+            }
+        }
+
+        // 2. Italic: _text_
+        if let Ok(re) = regex::Regex::new(r"_([^_]+)_") {
+            for mat in re.find_iter(&text) {
+                let start_offset = mat.start();
+                let end_offset = mat.end();
+                
+                let start_char = text[..start_offset].chars().count() as i32;
+                let end_char = text[..end_offset].chars().count() as i32;
+
+                let start_iter = buffer.iter_at_offset(start_char);
+                let end_iter = buffer.iter_at_offset(end_char);
+
+                let mut content_start = start_iter;
+                content_start.forward_chars(1);
+                let mut content_end = end_iter;
+                content_end.backward_chars(1);
+
+                buffer.apply_tag_by_name("italic", &content_start, &content_end);
+                buffer.apply_tag_by_name("hidden", &start_iter, &content_start);
+                buffer.apply_tag_by_name("hidden", &content_end, &end_iter);
+            }
+        }
+
+        // 3. Highlight: ==text==
+        if let Ok(re) = regex::Regex::new(r"==([^=]+)==") {
+            for mat in re.find_iter(&text) {
+                let start_offset = mat.start();
+                let end_offset = mat.end();
+                
+                let start_char = text[..start_offset].chars().count() as i32;
+                let end_char = text[..end_offset].chars().count() as i32;
+
+                let start_iter = buffer.iter_at_offset(start_char);
+                let end_iter = buffer.iter_at_offset(end_char);
+
+                let mut content_start = start_iter;
+                content_start.forward_chars(2);
+                let mut content_end = end_iter;
+                content_end.backward_chars(2);
+
+                buffer.apply_tag_by_name("highlight", &content_start, &content_end);
+                buffer.apply_tag_by_name("hidden", &start_iter, &content_start);
+                buffer.apply_tag_by_name("hidden", &content_end, &end_iter);
+            }
+        }
+
+        // 4. Code Blocks (Simple)
+        // We need to re-apply code block logic here because we cleared tags.
+        // Re-use the logic from previous implementation but simplified
         if let Some(code_tag) = buffer.tag_table().lookup("code") {
-            let mut iter = buffer.start_iter();
-
-            while iter.forward_to_tag_toggle(Some(&code_tag)) {
-                if !iter.toggles_tag(Some(&code_tag)) {
-                    // This is an end toggle, continue
-                    continue;
-                }
-
-                // We found a start of a code block
-                let mut end_iter = iter;
-                if !end_iter.forward_to_tag_toggle(Some(&code_tag)) {
-                    end_iter = buffer.end_iter();
-                }
-
-                // Extract text in this block
-                let block_text = buffer.text(&iter, &end_iter, false);
-                let block_start_offset = iter.offset();
-
-                // Keywords
-                let keywords = [
-                    "fn", "struct", "pub", "impl", "let", "mut", "use", "mod", "match", "if",
-                    "else", "return", "val", "var", "def", "class", "trait", "enum", "type",
-                    "const", "static", "async", "await",
-                ];
-                for keyword in keywords {
-                    let pattern = format!(r"\b{}\b", keyword);
-                    if let Ok(re) = regex::Regex::new(&pattern) {
-                        for mat in re.find_iter(&block_text) {
-                            let start_byte = mat.start();
-                            let end_byte = mat.end();
-
-                            // Convert byte offsets to char offsets
-                            let start_char_offset = block_text[..start_byte].chars().count() as i32;
-                            let end_char_offset = block_text[..end_byte].chars().count() as i32;
-
-                            let mut k_start =
-                                buffer.iter_at_offset(block_start_offset + start_char_offset);
-                            let mut k_end =
-                                buffer.iter_at_offset(block_start_offset + end_char_offset);
-                            buffer.apply_tag_by_name("keyword", &k_start, &k_end);
+             // Find ``` ... ```
+             // Regex for multiline code blocks is tricky with simple find_iter on full text.
+             // We can iterate manually or use regex with dot_matches_new_line
+             // But let's stick to the previous manual iteration logic for code blocks as it was robust-ish?
+             // Actually, the previous logic relied on "code" tag being present? No, it was finding it.
+             // Wait, the previous logic was: "If let Some(code_tag)... iterate forward_to_tag_toggle".
+             // This implies the "code" tag was ALREADY applied.
+             // We need to APPLY the "code" tag first.
+             
+             // Regex for code fence
+             if let Ok(re) = regex::Regex::new(r"(?s)```(.*?)```") {
+                 for mat in re.find_iter(&text) {
+                     let start_offset = mat.start();
+                     let end_offset = mat.end();
+                     
+                     let start_char = text[..start_offset].chars().count() as i32;
+                     let end_char = text[..end_offset].chars().count() as i32;
+                     
+                     let start_iter = buffer.iter_at_offset(start_char);
+                     let end_iter = buffer.iter_at_offset(end_char);
+                     
+                     buffer.apply_tag(&code_tag, &start_iter, &end_iter);
+                     
+                     // Now apply syntax highlighting inside
+                     // We can call a helper or just do it here.
+                     // Let's do a simple pass for keywords inside this block
+                     let block_text = &text[start_offset..end_offset];
+                     
+                     // Keywords
+                    let keywords = [
+                        "fn", "struct", "pub", "impl", "let", "mut", "use", "mod", "match", "if",
+                        "else", "return", "val", "var", "def", "class", "trait", "enum", "type",
+                        "const", "static", "async", "await",
+                    ];
+                    
+                    for keyword in keywords {
+                        let pattern = format!(r"\b{}\b", keyword);
+                        if let Ok(kw_re) = regex::Regex::new(&pattern) {
+                            for kw_mat in kw_re.find_iter(block_text) {
+                                let kw_start = start_offset + kw_mat.start();
+                                let kw_end = start_offset + kw_mat.end();
+                                
+                                let ks_char = text[..kw_start].chars().count() as i32;
+                                let ke_char = text[..kw_end].chars().count() as i32;
+                                
+                                let ks_iter = buffer.iter_at_offset(ks_char);
+                                let ke_iter = buffer.iter_at_offset(ke_char);
+                                
+                                buffer.apply_tag_by_name("keyword", &ks_iter, &ke_iter);
+                            }
                         }
                     }
-                }
-
-                // Types (Capitalized words)
-                if let Ok(re) = regex::Regex::new(r"\b[A-Z][a-zA-Z0-9_]*\b") {
-                    for mat in re.find_iter(&block_text) {
-                        let start_byte = mat.start();
-                        let end_byte = mat.end();
-
-                        let start_char_offset = block_text[..start_byte].chars().count() as i32;
-                        let end_char_offset = block_text[..end_byte].chars().count() as i32;
-
-                        let mut t_start =
-                            buffer.iter_at_offset(block_start_offset + start_char_offset);
-                        let mut t_end = buffer.iter_at_offset(block_start_offset + end_char_offset);
-                        buffer.apply_tag_by_name("type", &t_start, &t_end);
-                    }
-                }
-
-                // Strings
-                if let Ok(re) = regex::Regex::new(r#""[^"]*""#) {
-                    for mat in re.find_iter(&block_text) {
-                        let start_byte = mat.start();
-                        let end_byte = mat.end();
-
-                        let start_char_offset = block_text[..start_byte].chars().count() as i32;
-                        let end_char_offset = block_text[..end_byte].chars().count() as i32;
-
-                        let mut s_start =
-                            buffer.iter_at_offset(block_start_offset + start_char_offset);
-                        let mut s_end = buffer.iter_at_offset(block_start_offset + end_char_offset);
-                        buffer.apply_tag_by_name("string", &s_start, &s_end);
-                    }
-                }
-
-                // Comments
-                if let Ok(re) = regex::Regex::new(r"//.*") {
-                    for mat in re.find_iter(&block_text) {
-                        let start_byte = mat.start();
-                        let end_byte = mat.end();
-
-                        let start_char_offset = block_text[..start_byte].chars().count() as i32;
-                        let end_char_offset = block_text[..end_byte].chars().count() as i32;
-
-                        let mut c_start =
-                            buffer.iter_at_offset(block_start_offset + start_char_offset);
-                        let mut c_end = buffer.iter_at_offset(block_start_offset + end_char_offset);
-                        buffer.apply_tag_by_name("comment", &c_start, &c_end);
-                    }
-                }
-
-                iter = end_iter;
-            }
+                 }
+             }
         }
     }
 }
@@ -379,7 +410,7 @@ impl SimpleComponent for Editor {
                 }
             }
             EditorMsg::Highlight => {
-                // Self::highlight_buffer(&self.buffer);
+                Self::highlight_buffer(&self.buffer);
             }
             EditorMsg::InitTextView(view) => {
                 self.text_view = Some(view);
@@ -390,7 +421,7 @@ impl SimpleComponent for Editor {
 
                 // Create new buffer with tags
                 self.buffer = Self::create_buffer(&content);
-                // Self::highlight_buffer(&self.buffer); // Syntax highlighting disabled for now
+                Self::highlight_buffer(&self.buffer); // Syntax highlighting enabled
                 self.should_reload_buffer = true; // Only update buffer on load
                 self.should_update_title = true;
             }
@@ -435,7 +466,7 @@ impl SimpleComponent for Editor {
             }
             EditorMsg::ToolbarMsg(msg) => {
                 let buffer = &self.buffer;
-                let (mut start, mut end) = buffer.selection_bounds().unwrap_or_else(|| {
+                let (start, end) = buffer.selection_bounds().unwrap_or_else(|| {
                     let offset = buffer.cursor_position();
                     let iter = buffer.iter_at_offset(offset);
                     (iter, iter)
@@ -443,139 +474,155 @@ impl SimpleComponent for Editor {
 
                 let has_selection = start.offset() != end.offset();
 
+                // Create marks to preserve positions across mutations
+                let start_mark = buffer.create_mark(None, &start, true);
+                let end_mark = buffer.create_mark(None, &end, false); // Left gravity for end mark so it stays after insertion at start? 
+                // Actually:
+                // If we insert at start, we want start_mark to stay before it? No, usually we wrap.
+                // Let's assume we wrap selection: **|text|**
+                // Insert "**" at start. Start mark should stay at original start?
+                // If we use left gravity (true), it stays to the left of inserted text.
+                // If we use right gravity (false), it moves to the right.
+                
+                // We want to wrap: insert at start, insert at end.
+                // It's safer to resolve iterators from marks every time.
+
                 match msg {
                     ToolbarMsg::Checkbox => {
-                        buffer.insert(&mut start, "- [ ] ");
+                        let mut iter = buffer.iter_at_mark(&start_mark);
+                        buffer.insert(&mut iter, "- [ ] ");
                     }
 
                     ToolbarMsg::Highlight => {
                         if has_selection {
-                            let mut end_iter = end;
+                            // Insert at end first (to avoid affecting start offset if we used offsets, but marks handle this)
+                            // But inserting at start shifts end if we don't use marks.
+                            
+                            let mut end_iter = buffer.iter_at_mark(&end_mark);
                             buffer.insert(&mut end_iter, "==");
-                            let end_mark = buffer.create_mark(None, &end_iter, true);
-
-                            let mut start_iter = start;
+                            
+                            let mut start_iter = buffer.iter_at_mark(&start_mark);
                             buffer.insert(&mut start_iter, "==");
-                            let start_mark = buffer.create_mark(None, &start_iter, true);
 
+                            // Re-calculate ranges for tags
                             let start_iter = buffer.iter_at_mark(&start_mark);
                             let end_iter = buffer.iter_at_mark(&end_mark);
-
-                            let mut inner_start = start_iter;
-                            inner_start.forward_chars(2);
-                            let mut inner_end = end_iter;
-                            inner_end.backward_chars(2);
-
-                            buffer.apply_tag_by_name("highlight", &inner_start, &inner_end);
-                            buffer.apply_tag_by_name("hidden", &start_iter, &inner_start);
-                            buffer.apply_tag_by_name("hidden", &inner_end, &end_iter);
-
-                            buffer.delete_mark(&start_mark);
-                            buffer.delete_mark(&end_mark);
+                            
+                            // Apply tags
+                            // start_iter points to first "=". 
+                            // end_iter points after last "=".
+                            
+                            // We want to hide the "==" markers and highlight the text inside.
+                            let mut content_start = start_iter;
+                            content_start.forward_chars(2);
+                            
+                            let mut content_end = end_iter;
+                            content_end.backward_chars(2);
+                            
+                            buffer.apply_tag_by_name("highlight", &content_start, &content_end);
+                            buffer.apply_tag_by_name("hidden", &start_iter, &content_start);
+                            buffer.apply_tag_by_name("hidden", &content_end, &end_iter);
                         } else {
-                            buffer.insert(&mut start, "====");
-                            let mut iter = start;
-                            iter.backward_chars(2);
-                            buffer.place_cursor(&iter);
+                            let mut iter = buffer.iter_at_mark(&start_mark);
+                            buffer.insert(&mut iter, "====");
+                            let mut cursor = buffer.iter_at_mark(&start_mark);
+                            cursor.forward_chars(2);
+                            buffer.place_cursor(&cursor);
                         }
                     }
                     ToolbarMsg::Bold => {
                         if has_selection {
-                            let mut end_iter = end;
+                            let mut end_iter = buffer.iter_at_mark(&end_mark);
                             buffer.insert(&mut end_iter, "**");
-                            let end_mark = buffer.create_mark(None, &end_iter, true);
-
-                            let mut start_iter = start;
+                            
+                            let mut start_iter = buffer.iter_at_mark(&start_mark);
                             buffer.insert(&mut start_iter, "**");
-                            let start_mark = buffer.create_mark(None, &start_iter, true);
 
                             let start_iter = buffer.iter_at_mark(&start_mark);
                             let end_iter = buffer.iter_at_mark(&end_mark);
-
-                            let mut inner_start = start_iter;
-                            inner_start.forward_chars(2);
-                            let mut inner_end = end_iter;
-                            inner_end.backward_chars(2);
-
-                            buffer.apply_tag_by_name("bold", &inner_start, &inner_end);
-                            buffer.apply_tag_by_name("hidden", &start_iter, &inner_start);
-                            buffer.apply_tag_by_name("hidden", &inner_end, &end_iter);
-
-                            buffer.delete_mark(&start_mark);
-                            buffer.delete_mark(&end_mark);
+                            
+                            let mut content_start = start_iter;
+                            content_start.forward_chars(2);
+                            
+                            let mut content_end = end_iter;
+                            content_end.backward_chars(2);
+                            
+                            buffer.apply_tag_by_name("bold", &content_start, &content_end);
+                            buffer.apply_tag_by_name("hidden", &start_iter, &content_start);
+                            buffer.apply_tag_by_name("hidden", &content_end, &end_iter);
                         } else {
-                            buffer.insert(&mut start, "****");
-                            let mut iter = start;
-                            iter.backward_chars(2);
-                            buffer.place_cursor(&iter);
+                            let mut iter = buffer.iter_at_mark(&start_mark);
+                            buffer.insert(&mut iter, "****");
+                            let mut cursor = buffer.iter_at_mark(&start_mark);
+                            cursor.forward_chars(2);
+                            buffer.place_cursor(&cursor);
                         }
                     }
                     ToolbarMsg::Italic => {
                         if has_selection {
-                            let mut end_iter = end;
+                            let mut end_iter = buffer.iter_at_mark(&end_mark);
                             buffer.insert(&mut end_iter, "_");
-                            let end_mark = buffer.create_mark(None, &end_iter, true);
-
-                            let mut start_iter = start;
+                            
+                            let mut start_iter = buffer.iter_at_mark(&start_mark);
                             buffer.insert(&mut start_iter, "_");
-                            let start_mark = buffer.create_mark(None, &start_iter, true);
 
                             let start_iter = buffer.iter_at_mark(&start_mark);
                             let end_iter = buffer.iter_at_mark(&end_mark);
-
-                            let mut inner_start = start_iter;
-                            inner_start.forward_chars(1);
-                            let mut inner_end = end_iter;
-                            inner_end.backward_chars(1);
-
-                            buffer.apply_tag_by_name("italic", &inner_start, &inner_end);
-                            buffer.apply_tag_by_name("hidden", &start_iter, &inner_start);
-                            buffer.apply_tag_by_name("hidden", &inner_end, &end_iter);
-
-                            buffer.delete_mark(&start_mark);
-                            buffer.delete_mark(&end_mark);
+                            
+                            let mut content_start = start_iter;
+                            content_start.forward_chars(1);
+                            
+                            let mut content_end = end_iter;
+                            content_end.backward_chars(1);
+                            
+                            buffer.apply_tag_by_name("italic", &content_start, &content_end);
+                            buffer.apply_tag_by_name("hidden", &start_iter, &content_start);
+                            buffer.apply_tag_by_name("hidden", &content_end, &end_iter);
                         } else {
-                            buffer.insert(&mut start, "__");
-                            let mut iter = start;
-                            iter.backward_chars(1);
-                            buffer.place_cursor(&iter);
+                            let mut iter = buffer.iter_at_mark(&start_mark);
+                            buffer.insert(&mut iter, "__");
+                            let mut cursor = buffer.iter_at_mark(&start_mark);
+                            cursor.forward_chars(1);
+                            buffer.place_cursor(&cursor);
                         }
                     }
                     ToolbarMsg::BulletList => {
-                        buffer.insert(&mut start, "- ");
+                        let mut iter = buffer.iter_at_mark(&start_mark);
+                        buffer.insert(&mut iter, "- ");
                     }
                     ToolbarMsg::NumberedList => {
-                        buffer.insert(&mut start, "1. ");
+                        let mut iter = buffer.iter_at_mark(&start_mark);
+                        buffer.insert(&mut iter, "1. ");
                     }
                     ToolbarMsg::Link => {
                         if has_selection {
-                            let text = buffer.text(&start, &end, false);
+                            let start_iter = buffer.iter_at_mark(&start_mark);
+                            let end_iter = buffer.iter_at_mark(&end_mark);
+                            let text = buffer.text(&start_iter, &end_iter, false);
+                            
+                            // Delete selection
+                            buffer.delete(&mut buffer.iter_at_mark(&start_mark), &mut buffer.iter_at_mark(&end_mark));
+                            
                             let new_text = format!("[{}]()", text);
-
-                            let start_mark = buffer.create_mark(None, &start, true);
-                            buffer.delete(&mut start, &mut end);
-
                             let mut iter = buffer.iter_at_mark(&start_mark);
                             buffer.insert(&mut iter, &new_text);
 
-                            let start_iter = buffer.iter_at_mark(&start_mark);
-                            let mut cursor = start_iter;
+                            let mut cursor = buffer.iter_at_mark(&start_mark);
                             cursor.forward_chars(new_text.chars().count() as i32 - 1);
                             buffer.place_cursor(&cursor);
-                            buffer.delete_mark(&start_mark);
                         } else {
-                            let start_mark = buffer.create_mark(None, &start, true);
                             let mut iter = buffer.iter_at_mark(&start_mark);
                             buffer.insert(&mut iter, "[]()");
-
-                            let start_iter = buffer.iter_at_mark(&start_mark);
-                            let mut cursor = start_iter;
-                            cursor.forward_chars(1); // Inside brackets
+                            let mut cursor = buffer.iter_at_mark(&start_mark);
+                            cursor.forward_chars(1);
                             buffer.place_cursor(&cursor);
-                            buffer.delete_mark(&start_mark);
                         }
                     }
                 }
+                
+                // Clean up marks
+                buffer.delete_mark(&start_mark);
+                buffer.delete_mark(&end_mark);
             }
         }
     }

@@ -53,6 +53,8 @@ Before submitting, verify it builds:
 3.  **Add Manifest:**
     Copy your manifest `build-aux/com.aashiqumar.watermelon.json` to the root of this repo.
     *Note: Flathub prefers the manifest to be named `com.aashiqumar.watermelon.json`.*
+    
+    Also, ensure the icon is installed correctly. I've renamed `assets/icon.png` to `assets/com.aashiqumar.watermelon.png` to match the App ID.
 
 4.  **Commit and Push:**
     ```bash

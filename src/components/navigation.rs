@@ -133,10 +133,10 @@ impl FactoryComponent for FolderRow {
     fn update(&mut self, msg: Self::Input, sender: FactorySender<Self>) {
         match msg {
             FolderRowMsg::Select => {
-                sender.output(FolderRowOutput::Selected(self.name.clone()));
+                let _ = sender.output(FolderRowOutput::Selected(self.name.clone()));
             }
             FolderRowMsg::DropNote(note_id) => {
-                sender.output(FolderRowOutput::NoteDropped(self.name.clone(), note_id));
+                let _ = sender.output(FolderRowOutput::NoteDropped(self.name.clone(), note_id));
             }
             FolderRowMsg::StartRename => {
                 self.is_renaming = true;
@@ -150,7 +150,7 @@ impl FactoryComponent for FolderRow {
                     self.name = new_name.clone();
                     self.is_renaming = false;
 
-                    sender.output(FolderRowOutput::Renamed(old_name, new_name));
+                    let _ = sender.output(FolderRowOutput::Renamed(old_name, new_name));
                 } else {
                     self.is_renaming = false;
                 }
@@ -304,7 +304,7 @@ impl SimpleComponent for Navigation {
                 self.selected_category = cat.clone();
                 self.folders
                     .broadcast(FolderRowMsg::UpdateSelection(cat.clone()));
-                sender.output(NavigationOutput::FolderSelected(cat));
+                let _ = sender.output(NavigationOutput::FolderSelected(cat));
             }
             NavigationMsg::FolderOutput(output) => {
                 match output {
@@ -312,17 +312,17 @@ impl SimpleComponent for Navigation {
                         self.selected_category = name.clone();
                         self.folders
                             .broadcast(FolderRowMsg::UpdateSelection(name.clone()));
-                        sender.output(NavigationOutput::FolderSelected(name));
+                        let _ = sender.output(NavigationOutput::FolderSelected(name));
                     }
                     FolderRowOutput::NoteDropped(folder, note_id) => {
-                        sender.output(NavigationOutput::MoveNote(note_id, folder));
+                        let _ = sender.output(NavigationOutput::MoveNote(note_id, folder));
                     }
                     FolderRowOutput::Renamed(old_name, new_name) => {
                         // Update selected category if it was the renamed folder
                         if self.selected_category == old_name {
                             self.selected_category = new_name.clone();
                         }
-                        sender.output(NavigationOutput::RenameFolder(old_name, new_name));
+                        let _ = sender.output(NavigationOutput::RenameFolder(old_name, new_name));
                     }
                 }
             }
@@ -330,7 +330,7 @@ impl SimpleComponent for Navigation {
                 // In a real app, this would show a dialog
                 let new_name = format!("New Folder {}", self.folders.len() + 1);
                 self.folders.guard().push_back(new_name.clone());
-                sender.output(NavigationOutput::AddFolder(new_name));
+                let _ = sender.output(NavigationOutput::AddFolder(new_name));
             }
         }
     }
