@@ -18,6 +18,7 @@ jobs:
       with:
         bundle: watermelon.flatpak
         manifest-path: build-aux/com.aashiqumar.watermelon.json
+        disable-sandbox: true
     - name: Upload Flatpak
       uses: actions/upload-artifact@v4
       with:
